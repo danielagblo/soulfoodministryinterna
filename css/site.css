@@ -584,6 +584,49 @@ body.sub .menu-toggle:hover {
   background: transparent;
 }
 
+.page-close {
+  margin: 0;
+}
+
+.page-close img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.facebook {
+  width: min(68rem, calc(100% - 40px));
+  margin: 0 auto 2.75rem;
+}
+
+.facebook h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.55rem;
+  letter-spacing: -0.02em;
+}
+
+.facebook p {
+  margin: 0.45rem 0 0;
+}
+
+.facebook a {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.facebook-frame {
+  display: block;
+  width: min(100%, 500px);
+  height: 140px;
+  margin-top: 1rem;
+  border: 0;
+  border-radius: 0.8rem;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line);
+}
+
 .sheet-hero {
   height: min(52vh, 34rem);
   min-height: 16rem;
@@ -603,7 +646,7 @@ body.sub .menu-toggle:hover {
 .sheet-grid {
   width: min(68rem, calc(100% - 40px));
   margin: 0 auto;
-  padding: 2.75rem 0 4.5rem;
+  padding: 2.75rem 0 2.25rem;
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(15rem, 0.75fr);
   gap: 3.5rem;
@@ -632,6 +675,28 @@ body.sub .menu-toggle:hover {
   margin: 1.1rem 0 0;
   font-size: 1.18rem;
   line-height: 1.55;
+}
+
+.founder {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 0 1.35rem;
+  align-items: start;
+  margin-top: 0.9rem;
+}
+
+.founder img {
+  width: 8.5rem;
+  height: 8.5rem;
+  margin-top: 0.15rem;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 20%;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 5px rgb(176 122 48 / 0.55);
+}
+
+.founder p:first-child {
+  margin-top: 0;
 }
 
 .prose h2 {
@@ -741,6 +806,16 @@ body.sub .menu-toggle:hover {
 }
 
 @media (max-width: 860px) {
+  .sheet-hero {
+    height: auto;
+    min-height: 0;
+  }
+
+  .sheet-hero img {
+    height: auto;
+    object-fit: contain;
+  }
+
   .sheet-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -748,6 +823,22 @@ body.sub .menu-toggle:hover {
 
   .facts {
     position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .founder {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 0.85rem;
+  }
+
+  .founder img {
+    margin-top: 0;
+  }
+
+  .founder > div {
+    justify-self: stretch;
   }
 }
 

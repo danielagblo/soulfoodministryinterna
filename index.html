@@ -16,7 +16,7 @@
     (function () {
       var raw = (location.hash || "").replace("#", "");
       var n = /^\d+$/.test(raw) ? Number(raw) : 0;
-      if (n < 0 || n > 25) n = 0;
+      if (n < 0 || n > 19) n = 0;
       document.documentElement.dataset.scene = String(n);
       document.getElementById("boot-slide").textContent = '.slide[data-index="' + n + '"]{opacity:1;z-index:1}';
     })();
@@ -42,32 +42,26 @@
   </header>
 
   <main class="stage" id="top" aria-roledescription="carousel" aria-label="Photographs">
-    <img class="slide" data-index="0" src="images/01.jpg" alt="">
-    <img class="slide" data-index="1" src="images/02.jpg" alt="">
-    <img class="slide" data-index="2" src="images/03.jpg" alt="">
-    <img class="slide" data-index="3" src="images/04.jpg" alt="">
-    <img class="slide" data-index="4" src="images/05.jpg" alt="">
-    <img class="slide" data-index="5" src="images/06.jpg" alt="">
-    <img class="slide" data-index="6" src="images/07.jpg" alt="">
-    <img class="slide" data-index="7" src="images/08.jpg" alt="">
-    <img class="slide" data-index="8" src="images/09.jpg" alt="">
-    <img class="slide" data-index="9" src="images/10.jpg" alt="">
-    <img class="slide" data-index="10" src="images/11.jpg" alt="">
-    <img class="slide" data-index="11" src="images/12.jpg" alt="">
-    <img class="slide" data-index="12" src="images/13.jpg" alt="">
-    <img class="slide" data-index="13" src="images/14.jpg" alt="">
-    <img class="slide" data-index="14" src="images/15.jpg" alt="">
-    <img class="slide" data-index="15" src="images/16.jpg" alt="">
-    <img class="slide" data-index="16" src="images/17.jpg" alt="">
-    <img class="slide" data-index="17" src="images/18.jpg" alt="">
-    <img class="slide" data-index="18" src="images/19.jpg" alt="">
-    <img class="slide" data-index="19" src="images/20.jpg" alt="">
-    <img class="slide" data-index="20" src="images/21.jpg" alt="">
-    <img class="slide" data-index="21" src="images/22.jpg" alt="">
-    <img class="slide" data-index="22" src="images/23.jpg" alt="">
-    <img class="slide" data-index="23" src="images/24.jpg" alt="">
-    <img class="slide" data-index="24" src="images/25.jpg" alt="">
-    <img class="slide" data-index="25" src="images/26.jpg" alt="">
+    <img class="slide" data-index="0" src="images/08.jpg" alt="">
+    <img class="slide" data-index="1" src="images/17.jpg" alt="">
+    <img class="slide" data-index="2" src="images/35.jpg" alt="">
+    <img class="slide" data-index="3" src="images/12.jpg" alt="">
+    <img class="slide" data-index="4" src="images/20.jpg" alt="">
+    <img class="slide" data-index="5" src="images/22.jpg" alt="">
+    <img class="slide" data-index="6" src="images/19.jpg" alt="">
+    <img class="slide" data-index="7" src="images/25.jpg" alt="">
+    <img class="slide" data-index="8" src="images/27.jpg" alt="">
+    <img class="slide" data-index="9" src="images/34.jpg" alt="">
+    <img class="slide" data-index="10" src="images/30.jpg" alt="">
+    <img class="slide" data-index="11" src="images/33.jpg" alt="">
+    <img class="slide" data-index="12" src="images/28.jpg" alt="">
+    <img class="slide" data-index="13" src="images/18.jpg" alt="">
+    <img class="slide" data-index="14" src="images/11.jpg" alt="">
+    <img class="slide" data-index="15" src="images/05.jpg" alt="">
+    <img class="slide" data-index="16" src="images/23.jpg" alt="">
+    <img class="slide" data-index="17" src="images/24.jpg" alt="">
+    <img class="slide" data-index="18" src="images/31.jpg" alt="">
+    <img class="slide" data-index="19" src="images/32.jpg" alt="">
     <div class="grain" aria-hidden="true"></div>
     <div class="stage-shade" aria-hidden="true"></div>
 
@@ -77,32 +71,26 @@
       </button>
       <div class="reel-window">
         <ul class="reel-track">
-          <li><button class="thumb" type="button" data-select="0" aria-label="Photo 1"><img src="images/01.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="1" aria-label="Photo 2"><img src="images/02.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="2" aria-label="Photo 3"><img src="images/03.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="3" aria-label="Photo 4"><img src="images/04.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="4" aria-label="Photo 5"><img src="images/05.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="5" aria-label="Photo 6"><img src="images/06.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="6" aria-label="Photo 7"><img src="images/07.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="7" aria-label="Photo 8"><img src="images/08.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="8" aria-label="Photo 9"><img src="images/09.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="9" aria-label="Photo 10"><img src="images/10.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="10" aria-label="Photo 11"><img src="images/11.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="11" aria-label="Photo 12"><img src="images/12.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="12" aria-label="Photo 13"><img src="images/13.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="13" aria-label="Photo 14"><img src="images/14.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="14" aria-label="Photo 15"><img src="images/15.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="15" aria-label="Photo 16"><img src="images/16.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="16" aria-label="Photo 17"><img src="images/17.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="17" aria-label="Photo 18"><img src="images/18.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="18" aria-label="Photo 19"><img src="images/19.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="19" aria-label="Photo 20"><img src="images/20.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="20" aria-label="Photo 21"><img src="images/21.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="21" aria-label="Photo 22"><img src="images/22.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="22" aria-label="Photo 23"><img src="images/23.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="23" aria-label="Photo 24"><img src="images/24.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="24" aria-label="Photo 25"><img src="images/25.jpg" alt=""></button></li>
-          <li><button class="thumb" type="button" data-select="25" aria-label="Photo 26"><img src="images/26.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="0" aria-label="Photo 1"><img src="images/08.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="1" aria-label="Photo 2"><img src="images/17.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="2" aria-label="Photo 3"><img src="images/35.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="3" aria-label="Photo 4"><img src="images/12.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="4" aria-label="Photo 5"><img src="images/20.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="5" aria-label="Photo 6"><img src="images/22.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="6" aria-label="Photo 7"><img src="images/19.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="7" aria-label="Photo 8"><img src="images/25.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="8" aria-label="Photo 9"><img src="images/27.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="9" aria-label="Photo 10"><img src="images/34.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="10" aria-label="Photo 11"><img src="images/30.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="11" aria-label="Photo 12"><img src="images/33.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="12" aria-label="Photo 13"><img src="images/28.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="13" aria-label="Photo 14"><img src="images/18.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="14" aria-label="Photo 15"><img src="images/11.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="15" aria-label="Photo 16"><img src="images/05.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="16" aria-label="Photo 17"><img src="images/23.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="17" aria-label="Photo 18"><img src="images/24.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="18" aria-label="Photo 19"><img src="images/31.jpg" alt=""></button></li>
+          <li><button class="thumb" type="button" data-select="19" aria-label="Photo 20"><img src="images/32.jpg" alt=""></button></li>
         </ul>
       </div>
       <button class="reel-arrow" type="button" data-step="1" aria-label="Next photo">
