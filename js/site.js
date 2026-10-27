@@ -257,19 +257,22 @@
     var strikes = [];
     var wait = 0;
     var dpr = 1;
+    var scale = 1;
     var REF_W = 1920;
     var REF_H = 1080;
 
     function px(css) {
-      return css * dpr;
+      return css * dpr * scale;
     }
 
     function fit() {
       var rect = stage.getBoundingClientRect();
       dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var next = window.matchMedia("(max-width: 860px)").matches ? 0.04 : 1;
       var w = Math.max(1, Math.round(rect.width * dpr));
       var h = Math.max(1, Math.round(rect.height * dpr));
-      if (canvas.width === w && canvas.height === h) return;
+      if (canvas.width === w && canvas.height === h && scale === next) return;
+      scale = next;
       canvas.width = w;
       canvas.height = h;
       strikes.length = 0;
@@ -292,7 +295,7 @@
       var pts = split([{ x: x, y: y }, { x: endX, y: endY }], px(REF_W * 0.042));
       pts[0].y = 0;
       var forks = [];
-      var forksWanted = 2 + Math.floor(Math.random() * 2);
+      var forksWanted = scale < 1 ? 1 : 2 + Math.floor(Math.random() * 2);
       for (var n = 0; n < forksWanted; n++) {
         var at = 2 + Math.floor(Math.random() * Math.max(1, pts.length - 4));
         var from = pts[at];
@@ -337,15 +340,16 @@
       }
     }
 
-    function paintBolt(bolt, alpha, scale) {
-      var span = px(REF_W);
-      strokeTaper(bolt.pts, "rgba(140, 186, 255," + (alpha * 0.55) + ")", Math.max(3.5, span * 0.0032) * scale);
-      strokeTaper(bolt.pts, "rgba(244, 250, 255," + alpha + ")", Math.max(1.2, span * 0.0011) * scale);
-      strokeTaper(bolt.pts, "rgba(255,255,255," + alpha + ")", Math.max(0.6, span * 0.00045) * scale);
+    function paintBolt(bolt, alpha, paintScale) {
+      var span = REF_W * dpr;
+      var size = scale * paintScale;
+      strokeTaper(bolt.pts, "rgba(140, 186, 255," + (alpha * 0.55) + ")", Math.max(3.5, span * 0.0032) * size);
+      strokeTaper(bolt.pts, "rgba(244, 250, 255," + alpha + ")", Math.max(1.2, span * 0.0011) * size);
+      strokeTaper(bolt.pts, "rgba(255,255,255," + alpha + ")", Math.max(0.6, span * 0.00045) * size);
       for (var f = 0; f < bolt.forks.length; f++) {
         var fork = bolt.forks[f];
-        strokeTaper(fork, "rgba(168, 206, 255," + (alpha * 0.5) + ")", Math.max(2, span * 0.0016) * scale);
-        strokeTaper(fork, "rgba(255,255,255," + alpha + ")", Math.max(0.45, span * 0.00032) * scale);
+        strokeTaper(fork, "rgba(168, 206, 255," + (alpha * 0.5) + ")", Math.max(2, span * 0.0016) * size);
+        strokeTaper(fork, "rgba(255,255,255," + alpha + ")", Math.max(0.45, span * 0.00032) * size);
       }
     }
 
@@ -358,13 +362,13 @@
           continue;
         }
         var alpha = glow(age);
-        ctx.fillStyle = "rgba(210, 226, 255," + (alpha * 0.1) + ")";
+        ctx.fillStyle = "rgba(210, 226, 255," + (alpha * (scale < 1 ? 0.02 : 0.1)) + ")";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         ctx.shadowColor = "rgba(210, 230, 255, 0.9)";
-        ctx.shadowBlur = 6 * (px(REF_W) / 1400);
+        ctx.shadowBlur = 6 * (REF_W * dpr / 1400) * scale;
         for (var b = 0; b < strikes[i].bolts.length; b++) paintBolt(strikes[i].bolts[b], alpha, 1);
         ctx.restore();
       }
