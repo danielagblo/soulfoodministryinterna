@@ -1,21 +1,8 @@
 (function () {
-  document.querySelectorAll(".thumb").forEach(function (button) {
-    var fire = document.createElement("span");
-    fire.className = "fire";
-    fire.setAttribute("aria-hidden", "true");
-    button.appendChild(fire);
-  });
-  var COUNT = document.querySelectorAll(".slide").length;
+  document.documentElement.classList.add("js");
+
   var nav = document.getElementById("site-nav");
   var toggle = document.querySelector(".menu-toggle");
-  var live = document.getElementById("arm-live");
-
-  function indexFromHash() {
-    var raw = (location.hash || "").replace("#", "");
-    if (!/^\d+$/.test(raw)) return 0;
-    var index = Number(raw);
-    return index >= 0 && index < COUNT ? index : 0;
-  }
 
   function closeMenu() {
     if (!nav || !toggle) return;
@@ -23,100 +10,13 @@
     toggle.setAttribute("aria-expanded", "false");
   }
 
-  function visibleCount() {
-    if (window.matchMedia("(max-width: 860px)").matches) return 3;
-    if (window.matchMedia("(max-width: 1100px)").matches) return 4;
-    return 5;
-  }
-
-  function layoutReel(index) {
-    var track = document.querySelector(".reel-track");
-    if (!track) return;
-    var visible = visibleCount();
-    var shift = (visible - 1) / 2 - index;
-    track.style.transform = "translateX(calc(" + shift + " * (var(--thumb) + var(--gap))))";
-  }
-
-  function enterScene(index) {
-    var next = document.querySelector('.slide[data-index="' + index + '"]');
-    if (!next) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      document.querySelectorAll(".slide").forEach(function (slide) {
-        slide.classList.remove("is-current", "is-leaving", "is-entering");
-      });
-      next.classList.add("is-current");
-      return;
-    }
-    document.querySelectorAll(".slide").forEach(function (slide) {
-      slide.classList.remove("is-entering");
-      if (slide !== next && slide.classList.contains("is-current")) slide.classList.add("is-leaving");
-    });
-    next.classList.remove("is-leaving");
-    void next.offsetWidth;
-    next.classList.add("is-current", "is-entering");
-    next.addEventListener("animationend", function done() {
-      next.classList.remove("is-entering");
-      document.querySelectorAll(".slide").forEach(function (slide) {
-        if (slide !== next) slide.classList.remove("is-current", "is-leaving");
-      });
-    }, { once: true });
-  }
-
-  function selectScene(index, historyMode) {
-    index = Number(index);
-    if (index < 0 || index >= COUNT || Number.isNaN(index)) return;
-    var id = String(index);
-    var previous = document.documentElement.getAttribute("data-scene");
-    document.documentElement.setAttribute("data-scene", id);
-    var boot = document.getElementById("boot-slide");
-    if (boot) boot.textContent = "";
-    document.querySelectorAll("[data-select]").forEach(function (el) {
-      var on = el.getAttribute("data-select") === id;
-      if (el.classList.contains("thumb")) {
-        if (on) el.setAttribute("aria-current", "true");
-        else el.removeAttribute("aria-current");
-      } else {
-        el.setAttribute("aria-pressed", on ? "true" : "false");
-      }
-    });
-    enterScene(index);
-    layoutReel(index);
-    mountFire();
-    if (live) live.textContent = "Photo " + (index + 1) + " of " + COUNT;
-    if (historyMode === "push" && previous !== id) {
-      history.pushState({ scene: id }, "", index === 0 ? location.pathname + location.search : "#" + id);
-    }
-  }
-
-  function step(direction) {
-    var current = Number(document.documentElement.getAttribute("data-scene") || "0");
-    if (Number.isNaN(current)) current = 0;
-    selectScene((current + direction + COUNT) % COUNT, "push");
-  }
-
-  document.addEventListener("click", function (event) {
-    var trigger = event.target.closest("[data-select]");
-    if (trigger) {
-      event.preventDefault();
-      selectScene(trigger.getAttribute("data-select"), "push");
-      closeMenu();
-      return;
-    }
-    if (event.target.closest("[data-step]")) {
-      step(Number(event.target.closest("[data-step]").getAttribute("data-step")));
-    }
-  });
-
   if (toggle && nav) {
     toggle.addEventListener("click", function () {
       var open = nav.classList.toggle("is-open");
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
     });
-  }
-
-  if (nav) {
     nav.addEventListener("click", function (event) {
-      if (event.target.closest("a") && !event.target.closest("[data-select]")) closeMenu();
+      if (event.target.closest("a")) closeMenu();
     });
   }
 
@@ -124,285 +24,271 @@
     if (event.key === "Escape") closeMenu();
   });
 
-  var waButton = document.querySelector(".whatsapp");
+  var gatherings = [
+    { key: "sunday", name: "Revelation Service", days: [0], start: 8 * 60, end: 12 * 60 + 30 },
+    { key: "counsel", name: "One-to-one counselling", days: [1, 4, 6], start: 9 * 60, end: 12 * 60 + 30 },
+    { key: "evening", name: "Evening Service", days: [1, 2, 3, 4, 5, 6], start: 17 * 60 + 30, end: 20 * 60 }
+  ];
+  var weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  function accraParts(date) {
+    var fmt = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Africa/Accra",
+      weekday: "short",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23"
+    });
+    var parts = {};
+    fmt.formatToParts(date).forEach(function (part) {
+      if (part.type !== "literal") parts[part.type] = part.value;
+    });
+    var name = String(parts.weekday || "").replace(/[^A-Za-z]/g, "").slice(0, 3);
+    return {
+      dow: { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[name],
+      y: Number(parts.year),
+      m: Number(parts.month),
+      d: Number(parts.day),
+      mins: Number(parts.hour) * 60 + Number(parts.minute)
+    };
+  }
+
+  function clock(mins) {
+    var h = Math.floor(mins / 60);
+    var m = mins % 60;
+    var suffix = h >= 12 ? "p.m." : "a.m.";
+    var hour = h % 12;
+    if (hour === 0) hour = 12;
+    return hour + ":" + (m < 10 ? "0" : "") + m + " " + suffix;
+  }
+
+  function nextGathering(now) {
+    var i;
+    for (i = 0; i < gatherings.length; i += 1) {
+      var current = gatherings[i];
+      if (current.days.indexOf(now.dow) !== -1 && now.mins >= current.start && now.mins < current.end) {
+        return {
+          state: "now",
+          key: current.key,
+          kicker: "Happening now",
+          detail: current.name + ", until " + clock(current.end)
+        };
+      }
+    }
+    var best = null;
+    gatherings.forEach(function (item) {
+      item.days.forEach(function (day) {
+        var delta = ((day - now.dow + 7) % 7) * 1440 + item.start - now.mins;
+        if (delta <= 0) delta += 7 * 1440;
+        if (!best || delta < best.delta) best = { item: item, day: day, delta: delta };
+      });
+    });
+    var today = best.day === now.dow && best.delta < 1440;
+    var tomorrow = best.day === (now.dow + 1) % 7 && best.delta < 2880;
+    return {
+      state: "next",
+      key: best.item.key,
+      kicker: today ? "Today" : tomorrow ? "Tomorrow" : weekdays[best.day],
+      detail: best.item.name + ", " + clock(best.item.start) + " to " + clock(best.item.end)
+    };
+  }
+
+  function paintGathering() {
+    var info = nextGathering(accraParts(new Date()));
+    document.querySelectorAll("[data-next-kicker]").forEach(function (el) {
+      el.textContent = info.kicker;
+    });
+    document.querySelectorAll("[data-next-detail]").forEach(function (el) {
+      el.textContent = info.detail;
+    });
+    document.querySelectorAll("[data-gathering]").forEach(function (el) {
+      var on = el.getAttribute("data-gathering") === info.key;
+      el.classList.toggle("is-now", info.state === "now" && on);
+      el.classList.toggle("is-next", info.state === "next" && on);
+    });
+  }
+
+  if (document.querySelector("[data-next-kicker], [data-gathering]")) {
+    paintGathering();
+    setInterval(paintGathering, 30000);
+  }
+
+  function stamp(parts, addDays) {
+    var date = new Date(Date.UTC(parts.y, parts.m - 1, parts.d + addDays));
+    var month = String(date.getUTCMonth() + 1);
+    var day = String(date.getUTCDate());
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+    return date.getUTCFullYear() + month + day;
+  }
+
+  function calendarUrl(kind) {
+    var now = accraParts(new Date());
+    var add = (7 - now.dow) % 7;
+    var endHour = kind === "class" ? 13 * 60 : 12 * 60 + 30;
+    if (add === 0 && now.mins >= endHour) add = 7;
+    var day = stamp(now, add);
+    var start = kind === "class" ? "T080000" : "T080000";
+    var end = kind === "class" ? "T130000" : "T123000";
+    var text = kind === "class"
+      ? "Soul Food ICT College — Sunday class"
+      : "Revelation Service — Soul Food Ministries";
+    var details = kind === "class"
+      ? "Sunday class, 8:00 a.m. to 1:00 p.m., once a week at Lapaz. Ask which cohort is open."
+      : "Sunday, 8:00 a.m. to 12:30 p.m. at Soul Food Ministries. Ask the ministry to confirm the current week.";
+    var params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: text,
+      dates: day + start + "/" + day + end,
+      ctz: "Africa/Accra",
+      location: "Lapaz Race Course, Container, Lapaz, Accra",
+      details: details,
+      recur: "RRULE:FREQ=WEEKLY;BYDAY=SU"
+    });
+    return "https://calendar.google.com/calendar/render?" + params.toString().replace("%2F", "/");
+  }
+
+  document.querySelectorAll("[data-calendar]").forEach(function (link) {
+    link.setAttribute("href", calendarUrl(link.getAttribute("data-calendar")));
+  });
+
+  document.addEventListener("click", function (event) {
+    var copy = event.target.closest("[data-copy]");
+    if (!copy) return;
+    var label = copy.querySelector("[data-copy-label]") || copy;
+    var previous = label.textContent;
+    var done = function () {
+      label.textContent = "Copied";
+      setTimeout(function () { label.textContent = previous; }, 1600);
+    };
+    var text = "Lapaz Race Course, Container, Lapaz, Accra";
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () {
+        copyFallback(text, done);
+      });
+    } else {
+      copyFallback(text, done);
+    }
+  });
+
+  function copyFallback(text, done) {
+    var area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.left = "-999px";
+    document.body.appendChild(area);
+    area.select();
+    try {
+      if (document.execCommand("copy")) done();
+    } catch (error) {
+      /* Leave the label as it was. */
+    }
+    area.remove();
+  }
+
   var waDialog = document.getElementById("wa-form");
-  if (waButton && waDialog) {
-    var waForm = waDialog.querySelector("form");
-    waButton.addEventListener("click", function () {
-      closeMenu();
-      waDialog.showModal();
-    });
-    waDialog.querySelector("[data-wa-close]").addEventListener("click", function () {
-      waDialog.close();
-    });
-    waForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-      var data = new FormData(waForm);
-      var lines = waForm.getAttribute("data-wa") === "admission"
-        ? [
-            data.get("topic"),
-            "Name: " + data.get("name"),
-            "Phone: " + data.get("phone"),
-            "Course: " + data.get("course"),
-            "Start: " + data.get("start"),
-            "Experience: " + data.get("experience"),
-            "Area: " + data.get("area")
-          ]
-        : [
-            data.get("topic"),
-            "About: " + data.get("about"),
-            "Name: " + data.get("name"),
-            "Phone: " + data.get("phone")
-          ];
-      var note = String(data.get("note") || "").trim();
-      if (note) lines.push("Message: " + note);
-      window.open("https://wa.me/233244889424?text=" + encodeURIComponent(lines.join("\n")), "_blank", "noopener");
-      waDialog.close();
-    });
-  }
+  if (!waDialog) return;
+  var waForm = waDialog.querySelector("form");
 
-  if (!COUNT) return;
-
-  function mountFire() {
-    var host = document.querySelector(".thumb[aria-current='true'] .fire");
-    if (host && flameCanvas && host.firstChild !== flameCanvas) host.appendChild(flameCanvas);
-  }
-
-  var flameCanvas = null;
-
-  function startFire() {
-    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var size = 360;
-    var canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    canvas.setAttribute("aria-hidden", "true");
-    var ctx = canvas.getContext("2d", { willReadFrequently: true });
-    flameCanvas = canvas;
-    var video = document.createElement("video");
-    video.src = "images/fire-ring.mp4";
-    video.muted = true;
-    video.defaultMuted = true;
-    video.loop = !reduce;
-    video.autoplay = true;
-    video.playsInline = true;
-    video.setAttribute("muted", "");
-    video.setAttribute("playsinline", "");
-    video.setAttribute("aria-hidden", "true");
-    video.style.cssText = "position:fixed;left:-2400px;top:0;width:360px;height:360px;pointer-events:none";
-    document.body.appendChild(video);
-    var frame = ctx.createImageData(size, size);
-    var running = true;
-    function paint() {
-      if (!running || video.readyState < 2) {
-        if (running) requestAnimationFrame(paint);
-        return;
-      }
-      var ringScale = 90 / 83;
-      var draw = size * ringScale;
-      ctx.clearRect(0, 0, size, size);
-      ctx.drawImage(video, size / 2 - 176 * ringScale, size / 2 - 184 * ringScale, draw, draw);
-      var src = ctx.getImageData(0, 0, size, size).data;
-      var data = frame.data;
-      for (var i = 0; i < src.length; i += 4) {
-        var lum = src[i];
-        if (src[i + 1] > lum) lum = src[i + 1];
-        if (src[i + 2] > lum) lum = src[i + 2];
-        var alpha = lum <= 18 ? 0 : lum >= 52 ? 255 : ((lum - 18) * 255) / 34;
-        var px = (i >> 2) % size;
-        var py = (i >> 2) / size | 0;
-        var dist = Math.sqrt((px - size / 2) * (px - size / 2) + (py - size / 2) * (py - size / 2));
-        if (dist < 114) alpha = 0;
-        else if (dist < 124) alpha *= (dist - 114) / 10;
-        if (alpha > 0 && lum < 130) {
-          var heat = (lum - 18) / 112;
-          data[i] = 255;
-          data[i + 1] = Math.max(0, Math.round(heat * 48));
-          data[i + 2] = 0;
-        } else {
-          data[i] = src[i];
-          data[i + 1] = src[i + 1];
-          data[i + 2] = src[i + 2];
-        }
-        data[i + 3] = alpha;
-      }
-      ctx.putImageData(frame, 0, 0);
-      if (reduce) {
-        running = false;
-        video.pause();
-        return;
-      }
-      requestAnimationFrame(paint);
-    }
-    mountFire();
-    requestAnimationFrame(paint);
-    var play = video.play();
-    if (play && play.catch) play.catch(function () {});
-  }
-
-  startFire();
-  startStorm();
-
-  function startStorm() {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var stage = document.querySelector(".stage");
-    if (!stage) return;
-    var canvas = document.createElement("canvas");
-    canvas.className = "storm";
-    canvas.setAttribute("aria-hidden", "true");
-    var reel = stage.querySelector(".reel");
-    if (reel) stage.insertBefore(canvas, reel);
-    else stage.appendChild(canvas);
-    var ctx = canvas.getContext("2d");
-    var strikes = [];
-    var wait = 0;
-    var dpr = 1;
-    var scale = 1;
-    var REF_W = 1920;
-    var REF_H = 1080;
-
-    function px(css) {
-      return css * dpr * scale;
-    }
-
-    function fit() {
-      var rect = stage.getBoundingClientRect();
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      var next = window.matchMedia("(max-width: 860px)").matches ? 0.04 : 1;
-      var w = Math.max(1, Math.round(rect.width * dpr));
-      var h = Math.max(1, Math.round(rect.height * dpr));
-      if (canvas.width === w && canvas.height === h && scale === next) return;
-      scale = next;
-      canvas.width = w;
-      canvas.height = h;
-      strikes.length = 0;
-    }
-
-    function split(points, displace) {
-      if (displace < px(REF_H * 0.01)) return points;
-      var next = [points[0]];
-      for (var i = 0; i < points.length - 1; i++) {
-        var a = points[i];
-        var b = points[i + 1];
-        var mx = (a.x + b.x) / 2 + (Math.random() - 0.5) * displace;
-        var my = (a.y + b.y) / 2;
-        next.push({ x: mx, y: my }, b);
-      }
-      return split(next, displace * 0.55);
-    }
-
-    function makeBolt(x, y, endX, endY) {
-      var pts = split([{ x: x, y: y }, { x: endX, y: endY }], px(REF_W * 0.042));
-      pts[0].y = 0;
-      var forks = [];
-      var forksWanted = scale < 1 ? 1 : 2 + Math.floor(Math.random() * 2);
-      for (var n = 0; n < forksWanted; n++) {
-        var at = 2 + Math.floor(Math.random() * Math.max(1, pts.length - 4));
-        var from = pts[at];
-        var dir = Math.random() < 0.5 ? -1 : 1;
-        var drop = (endY - from.y) * (0.42 + Math.random() * 0.35);
-        forks.push(split(
-          [from, { x: from.x + dir * px(REF_W * (0.018 + Math.random() * 0.04)), y: from.y + drop }],
-          px(REF_W * 0.022)
-        ));
-      }
-      return { pts: pts, forks: forks };
-    }
-
-    function spawn() {
-      var bolts = [];
-      var count = 1 + (Math.random() < 0.45 ? 1 : 0);
-      for (var i = 0; i < count; i++) {
-        var x = canvas.width * (0.08 + Math.random() * 0.84);
-        var endX = x + (Math.random() - 0.5) * px(REF_W * 0.1);
-        var endY = px(REF_H * (0.52 + Math.random() * 0.28));
-        bolts.push(makeBolt(x, 0, endX, endY));
-      }
-      strikes.push({ bolts: bolts, born: performance.now(), life: 420 + Math.random() * 160 });
-    }
-
-    function glow(power) {
-      if (power < 0.06) return 1;
-      if (power < 0.16) return 0.18;
-      if (power < 0.28) return 0.92;
-      return Math.max(0, 1 - (power - 0.28) / 0.72);
-    }
-
-    function strokeTaper(pts, color, width) {
-      ctx.strokeStyle = color;
-      for (var i = 1; i < pts.length; i++) {
-        var t = i / (pts.length - 1);
-        ctx.beginPath();
-        ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
-        ctx.lineTo(pts[i].x, pts[i].y);
-        ctx.lineWidth = Math.max(0.7, width * (1 - t * 0.78));
-        ctx.stroke();
-      }
-    }
-
-    function paintBolt(bolt, alpha, paintScale) {
-      var span = REF_W * dpr;
-      var size = scale * paintScale;
-      strokeTaper(bolt.pts, "rgba(140, 186, 255," + (alpha * 0.55) + ")", Math.max(3.5, span * 0.0032) * size);
-      strokeTaper(bolt.pts, "rgba(244, 250, 255," + alpha + ")", Math.max(1.2, span * 0.0011) * size);
-      strokeTaper(bolt.pts, "rgba(255,255,255," + alpha + ")", Math.max(0.6, span * 0.00045) * size);
-      for (var f = 0; f < bolt.forks.length; f++) {
-        var fork = bolt.forks[f];
-        strokeTaper(fork, "rgba(168, 206, 255," + (alpha * 0.5) + ")", Math.max(2, span * 0.0016) * size);
-        strokeTaper(fork, "rgba(255,255,255," + alpha + ")", Math.max(0.45, span * 0.00032) * size);
-      }
-    }
-
-    function frame(now) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (var i = strikes.length - 1; i >= 0; i--) {
-        var age = (now - strikes[i].born) / strikes[i].life;
-        if (age >= 1) {
-          strikes.splice(i, 1);
-          continue;
-        }
-        var alpha = glow(age);
-        ctx.fillStyle = "rgba(210, 226, 255," + (alpha * (scale < 1 ? 0.02 : 0.1)) + ")";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.save();
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.shadowColor = "rgba(210, 230, 255, 0.9)";
-        ctx.shadowBlur = 6 * (REF_W * dpr / 1400) * scale;
-        for (var b = 0; b < strikes[i].bolts.length; b++) paintBolt(strikes[i].bolts[b], alpha, 1);
-        ctx.restore();
-      }
-      if (!strikes.length) {
-        wait = window.setTimeout(function () {
-          spawn();
-          requestAnimationFrame(frame);
-        }, 1600 + Math.random() * 2600);
-        return;
-      }
-      requestAnimationFrame(frame);
-    }
-
-    fit();
-    window.addEventListener("resize", fit);
-    window.setTimeout(function () {
-      spawn();
-      requestAnimationFrame(frame);
-    }, 700);
-  }
-
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "ArrowRight") step(1);
-    if (event.key === "ArrowLeft") step(-1);
+  document.addEventListener("click", function (event) {
+    if (!event.target.closest("[data-wa-open]")) return;
+    closeMenu();
+    waDialog.showModal();
   });
 
-  window.addEventListener("popstate", function () {
-    selectScene(indexFromHash(), "none");
+  waDialog.querySelector("[data-wa-close]").addEventListener("click", function () {
+    waDialog.close();
   });
 
-  window.addEventListener("resize", function () {
-    var current = Number(document.documentElement.getAttribute("data-scene") || "0");
-    layoutReel(Number.isNaN(current) ? 0 : current);
+  waForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    var data = new FormData(waForm);
+    var lines = waForm.getAttribute("data-wa") === "admission"
+      ? [
+          data.get("topic"),
+          "Name: " + data.get("name"),
+          "Phone: " + data.get("phone"),
+          "Course: " + data.get("course"),
+          "Start: " + data.get("start"),
+          "Experience: " + data.get("experience"),
+          "Area: " + data.get("area")
+        ]
+      : [
+          data.get("topic"),
+          "About: " + data.get("about"),
+          "Name: " + data.get("name"),
+          "Phone: " + data.get("phone")
+        ];
+    var note = String(data.get("note") || "").trim();
+    if (note) lines.push("Message: " + note);
+    window.open("https://wa.me/233244889424?text=" + encodeURIComponent(lines.join("\n")), "_blank", "noopener");
+    waDialog.close();
   });
 
-  selectScene(indexFromHash(), "none");
+  var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (!motion.matches) {
+    var frames = [];
+    document.querySelectorAll(".sheet-hero.bleed, .stage-photo, .house figure, .portrait").forEach(function (frame) {
+      if (!frame.querySelector("img")) return;
+      frame.classList.add("px-frame");
+      frames.push(frame);
+    });
+    document.querySelectorAll(".gallery img").forEach(function (img) {
+      var frame = document.createElement("div");
+      frame.className = "px-frame" + (img.classList.contains("gallery-wide") ? " px-wide" : "");
+      img.parentNode.insertBefore(frame, img);
+      frame.appendChild(img);
+      frames.push(frame);
+    });
+
+    var ticking = false;
+    function paintParallax() {
+      var viewH = window.innerHeight || 800;
+      var strength = viewH < 860 ? 0.08 : 0.15;
+      frames.forEach(function (frame) {
+        var rect = frame.getBoundingClientRect();
+        if (rect.bottom < 0 || rect.top > viewH) return;
+        var fromMid = rect.top + rect.height / 2 - viewH / 2;
+        var max = rect.height * 0.05;
+        var shift = Math.max(-max, Math.min(max, -fromMid * strength));
+        frame.style.setProperty("--py", shift.toFixed(1) + "px");
+      });
+      ticking = false;
+    }
+    function requestParallax() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(paintParallax);
+    }
+    paintParallax();
+    window.addEventListener("scroll", requestParallax, { passive: true });
+    window.addEventListener("resize", requestParallax);
+  }
+
+  var blocks = document.querySelectorAll("main > *, .site-foot > div");
+  var viewH = window.innerHeight || 800;
+  blocks.forEach(function (el, index) {
+    el.classList.add("reveal");
+    if (motion.matches || el.getBoundingClientRect().top < viewH * 0.92) {
+      el.classList.add("is-in");
+    } else {
+      el.style.transitionDelay = (index % 4) * 80 + "ms";
+    }
+  });
+  if (!motion.matches && "IntersectionObserver" in window) {
+    var seen = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-in");
+        seen.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
+    blocks.forEach(function (el) {
+      if (!el.classList.contains("is-in")) seen.observe(el);
+    });
+  }
 })();
